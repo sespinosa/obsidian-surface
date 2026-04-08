@@ -1,6 +1,4 @@
-import { basename } from "node:path";
-
-let activeProject: string = process.env.OBSIDIAN_DEFAULT_PROJECT || basename(process.cwd());
+let activeProject: string = process.env.OBSIDIAN_DEFAULT_PROJECT || "default";
 
 export function getProject(): string {
   return activeProject;
