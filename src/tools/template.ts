@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { error, success, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -47,8 +47,10 @@ Actions:
       try {
         return await handlers[params.action](params);
       } catch (e) {
-        return error(`template.${params.action} failed: ${(e as Error).message}`);
+        return error(
+          `template.${params.action} failed: ${(e as Error).message}`,
+        );
       }
-    }
+    },
   );
 }

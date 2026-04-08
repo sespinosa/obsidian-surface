@@ -1,20 +1,22 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { success, error, type ToolResult } from "../types.js";
-
-import { handlers as thoughtHandlers } from "./thought.js";
-import { handlers as noteHandlers } from "./note.js";
-import { handlers as layoutHandlers } from "./layout.js";
-import { handlers as vaultHandlers } from "./vault.js";
-import { handlers as searchHandlers } from "./search.js";
-import { handlers as propertyHandlers } from "./property.js";
+import { z } from "zod";
+import { error, success, type ToolResult } from "../types.js";
 import { handlers as dailyHandlers } from "./daily.js";
+import { handlers as devHandlers } from "./dev.js";
+import { handlers as layoutHandlers } from "./layout.js";
+import { handlers as noteHandlers } from "./note.js";
+import { handlers as propertyHandlers } from "./property.js";
+import { handlers as searchHandlers } from "./search.js";
 import { handlers as tagHandlers } from "./tag.js";
 import { handlers as taskHandlers } from "./task.js";
 import { handlers as templateHandlers } from "./template.js";
-import { handlers as devHandlers } from "./dev.js";
+import { handlers as thoughtHandlers } from "./thought.js";
+import { handlers as vaultHandlers } from "./vault.js";
 
-const toolMap: Record<string, Record<string, (p: any) => Promise<ToolResult>>> = {
+const toolMap: Record<
+  string,
+  Record<string, (p: any) => Promise<ToolResult>>
+> = {
   thought: thoughtHandlers,
   note: noteHandlers,
   layout: layoutHandlers,
@@ -49,13 +51,25 @@ Example:
           z.object({
             tool: z
               .enum([
-                "thought", "note", "layout", "vault", "search",
-                "property", "daily", "tag", "task", "template", "dev",
+                "thought",
+                "note",
+                "layout",
+                "vault",
+                "search",
+                "property",
+                "daily",
+                "tag",
+                "task",
+                "template",
+                "dev",
               ])
               .describe("Tool name"),
             action: z.string().describe("Action within the tool"),
-            params: z.record(z.unknown()).optional().describe("Parameters for the action"),
-          })
+            params: z
+              .record(z.unknown())
+              .optional()
+              .describe("Parameters for the action"),
+          }),
         )
         .describe("Ordered list of steps to execute"),
     },
@@ -95,6 +109,6 @@ Example:
       }
 
       return success(JSON.stringify(results, null, 2));
-    }
+    },
   );
 }

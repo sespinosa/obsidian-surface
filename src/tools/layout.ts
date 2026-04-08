@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, validatePath, type ToolResult } from "../types.js";
+import { error, success, type ToolResult, validatePath } from "../types.js";
 
 // --- Handler functions ---
 
@@ -10,8 +10,13 @@ export async function layoutWorkspace(): Promise<ToolResult> {
   return success(result || "Empty workspace.");
 }
 
-export async function layoutSplit(p: { direction: string }): Promise<ToolResult> {
-  const result = await execObsidian(["command", `id=workspace:split-${p.direction}`]);
+export async function layoutSplit(p: {
+  direction: string;
+}): Promise<ToolResult> {
+  const result = await execObsidian([
+    "command",
+    `id=workspace:split-${p.direction}`,
+  ]);
   return success(result || `Split pane ${p.direction}ly.`);
 }
 
@@ -32,8 +37,13 @@ export async function layoutSidebar(p: { side: string }): Promise<ToolResult> {
   return success(result || `Toggled ${p.side} sidebar.`);
 }
 
-export async function layoutFocus(p: { direction: string }): Promise<ToolResult> {
-  const result = await execObsidian(["command", `id=editor:focus-${p.direction}`]);
+export async function layoutFocus(p: {
+  direction: string;
+}): Promise<ToolResult> {
+  const result = await execObsidian([
+    "command",
+    `id=editor:focus-${p.direction}`,
+  ]);
   return success(result || `Focused ${p.direction}.`);
 }
 
@@ -90,14 +100,26 @@ Actions:
 - recents: List recently opened files (no params)`,
     {
       action: z
-        .enum(["workspace", "split", "close", "sidebar", "focus", "open", "tabs", "recents"])
+        .enum([
+          "workspace",
+          "split",
+          "close",
+          "sidebar",
+          "focus",
+          "open",
+          "tabs",
+          "recents",
+        ])
         .describe("Action to perform"),
       path: z.string().optional().describe("File path (for open, tabs)"),
       direction: z
         .enum(["vertical", "horizontal", "left", "right", "top", "bottom"])
         .optional()
         .describe("Direction (for split or focus)"),
-      side: z.enum(["left", "right"]).optional().describe("Sidebar side (for sidebar)"),
+      side: z
+        .enum(["left", "right"])
+        .optional()
+        .describe("Sidebar side (for sidebar)"),
       target: z
         .enum(["current", "others", "all"])
         .optional()
@@ -109,6 +131,6 @@ Actions:
       } catch (e) {
         return error(`layout.${params.action} failed: ${(e as Error).message}`);
       }
-    }
+    },
   );
 }

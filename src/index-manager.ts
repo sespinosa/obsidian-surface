@@ -1,5 +1,5 @@
-import { readFile, writeFile, mkdir, readdir, stat } from "node:fs/promises";
-import { join, basename } from "node:path";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { basename, join } from "node:path";
 import { execObsidian } from "./cli.js";
 import { THOUGHTS_DIR } from "./types.js";
 
@@ -110,11 +110,12 @@ export async function queryIndex(filters?: {
   }
   if (filters?.tags && filters.tags.length > 0) {
     results = results.filter((e) =>
-      filters.tags!.some((t) => e.tags?.includes(t))
+      filters.tags?.some((t) => e.tags?.includes(t)),
     );
   }
   if (filters?.since) {
-    results = results.filter((e) => e.created >= filters.since!);
+    const since = filters.since;
+    results = results.filter((e) => e.created >= since);
   }
   if (filters?.query) {
     const q = filters.query.toLowerCase();
@@ -122,7 +123,7 @@ export async function queryIndex(filters?: {
       (e) =>
         e.path.toLowerCase().includes(q) ||
         e.summary?.toLowerCase().includes(q) ||
-        e.project.toLowerCase().includes(q)
+        e.project.toLowerCase().includes(q),
     );
   }
 
@@ -146,7 +147,7 @@ function parseFrontmatter(content: string): Record<string, string | string[]> {
     const colonIdx = line.indexOf(":");
     if (colonIdx < 0) continue;
     const key = line.slice(0, colonIdx).trim();
-    let value = line.slice(colonIdx + 1).trim();
+    const value = line.slice(colonIdx + 1).trim();
     // Handle array values like [tag1, tag2]
     if (value.startsWith("[") && value.endsWith("]")) {
       fm[key] = value
@@ -172,7 +173,11 @@ export async function reindex(): Promise<number> {
     projects = await readdir(thoughtsRoot);
   } catch {
     // Thoughts directory doesn't exist yet
-    const index: Index = { version: 1, updated: new Date().toISOString(), entries: [] };
+    const index: Index = {
+      version: 1,
+      updated: new Date().toISOString(),
+      entries: [],
+    };
     await writeIndex(index);
     return 0;
   }
@@ -207,7 +212,11 @@ export async function reindex(): Promise<number> {
     }
   }
 
-  const index: Index = { version: 1, updated: new Date().toISOString(), entries };
+  const index: Index = {
+    version: 1,
+    updated: new Date().toISOString(),
+    entries,
+  };
   await writeIndex(index);
   return entries.length;
 }

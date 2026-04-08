@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { error, success, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -39,8 +39,14 @@ Actions:
 - screenshot: Take a screenshot of the Obsidian window (path optional)`,
     {
       action: z.enum(["eval", "screenshot"]).describe("Action to perform"),
-      code: z.string().optional().describe("JavaScript code to execute (for eval)"),
-      path: z.string().optional().describe("Path to save screenshot (for screenshot)"),
+      code: z
+        .string()
+        .optional()
+        .describe("JavaScript code to execute (for eval)"),
+      path: z
+        .string()
+        .optional()
+        .describe("Path to save screenshot (for screenshot)"),
     },
     async (params) => {
       try {
@@ -48,6 +54,6 @@ Actions:
       } catch (e) {
         return error(`dev.${params.action} failed: ${(e as Error).message}`);
       }
-    }
+    },
   );
 }
