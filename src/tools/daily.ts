@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { error, success, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -42,7 +42,10 @@ Actions:
 - append: Append content to the daily note (content required)`,
     {
       action: z.enum(["open", "read", "append"]).describe("Action to perform"),
-      content: z.string().optional().describe("Content to append (required for append)"),
+      content: z
+        .string()
+        .optional()
+        .describe("Content to append (required for append)"),
     },
     async (params) => {
       try {
@@ -50,6 +53,6 @@ Actions:
       } catch (e) {
         return error(`daily.${params.action} failed: ${(e as Error).message}`);
       }
-    }
+    },
   );
 }

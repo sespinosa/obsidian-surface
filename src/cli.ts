@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
-import { access, readFile, readdir } from "node:fs/promises";
 import { constants } from "node:fs";
+import { access, readdir, readFile } from "node:fs/promises";
 import { platform } from "node:os";
 import { join } from "node:path";
 
@@ -43,7 +43,10 @@ async function findOnPath(): Promise<string | null> {
 }
 
 /** Find Obsidian binary by scanning user directories */
-async function findObsidianInUserDirs(base: string, suffix: string): Promise<string | null> {
+async function findObsidianInUserDirs(
+  base: string,
+  suffix: string,
+): Promise<string | null> {
   try {
     const users = await readdir(base);
     for (const user of users) {
@@ -113,7 +116,7 @@ async function resolveCliPath(): Promise<string> {
   }
 
   throw new Error(
-    "Could not find Obsidian CLI. Set OBSIDIAN_CLI_PATH environment variable or ensure 'obsidian' is on your PATH."
+    "Could not find Obsidian CLI. Set OBSIDIAN_CLI_PATH environment variable or ensure 'obsidian' is on your PATH.",
   );
 }
 
@@ -140,7 +143,7 @@ export async function execObsidian(args: string[]): Promise<string> {
         } else {
           resolve(stdout.trim());
         }
-      }
+      },
     );
   });
 }

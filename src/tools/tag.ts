@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { error, success, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -34,7 +34,10 @@ Actions:
 - list: List all tags in the vault (no params)`,
     {
       action: z.enum(["info", "list"]).describe("Action to perform"),
-      tag: z.string().optional().describe("Tag name (for info, with or without #)"),
+      tag: z
+        .string()
+        .optional()
+        .describe("Tag name (for info, with or without #)"),
     },
     async (params) => {
       try {
@@ -42,6 +45,6 @@ Actions:
       } catch (e) {
         return error(`tag.${params.action} failed: ${(e as Error).message}`);
       }
-    }
+    },
   );
 }

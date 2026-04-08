@@ -1,11 +1,14 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, validatePath, type ToolResult } from "../types.js";
+import { error, success, type ToolResult, validatePath } from "../types.js";
 
 // --- Handler functions ---
 
-export async function searchText(p: { query: string; format?: string }): Promise<ToolResult> {
+export async function searchText(p: {
+  query: string;
+  format?: string;
+}): Promise<ToolResult> {
   const args = ["search", `query=${p.query}`];
   if (p.format) args.push(`format=${p.format}`);
   const result = await execObsidian(args);
@@ -17,7 +20,9 @@ export async function searchContext(p: { query: string }): Promise<ToolResult> {
   return success(result || "No results found.");
 }
 
-export async function searchBacklinks(p: { path: string }): Promise<ToolResult> {
+export async function searchBacklinks(p: {
+  path: string;
+}): Promise<ToolResult> {
   p.path = validatePath(p.path);
   const result = await execObsidian(["backlinks", `path=${p.path}`]);
   return success(result || "No backlinks found.");
@@ -74,11 +79,25 @@ Actions:
 - deadends: List files with no outgoing links (no params)`,
     {
       action: z
-        .enum(["text", "context", "backlinks", "links", "outline", "orphans", "deadends"])
+        .enum([
+          "text",
+          "context",
+          "backlinks",
+          "links",
+          "outline",
+          "orphans",
+          "deadends",
+        ])
         .describe("Action to perform"),
       query: z.string().optional().describe("Search query (for text, context)"),
-      path: z.string().optional().describe("File path (for backlinks, links, outline)"),
-      format: z.enum(["json", "text"]).optional().describe("Output format (for text, default: text)"),
+      path: z
+        .string()
+        .optional()
+        .describe("File path (for backlinks, links, outline)"),
+      format: z
+        .enum(["json", "text"])
+        .optional()
+        .describe("Output format (for text, default: text)"),
     },
     async (params) => {
       try {
@@ -86,6 +105,6 @@ Actions:
       } catch (e) {
         return error(`search.${params.action} failed: ${(e as Error).message}`);
       }
-    }
+    },
   );
 }

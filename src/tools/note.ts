@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { success, error, validatePath, type ToolResult } from "../types.js";
+import { error, success, type ToolResult, validatePath } from "../types.js";
 
 // --- Handler functions ---
 
@@ -26,21 +26,43 @@ export async function noteRead(p: { path: string }): Promise<ToolResult> {
   return success(result);
 }
 
-export async function noteWrite(p: { path: string; content: string }): Promise<ToolResult> {
+export async function noteWrite(p: {
+  path: string;
+  content: string;
+}): Promise<ToolResult> {
   p.path = validatePath(p.path);
-  const result = await execObsidian(["create", `path=${p.path}`, `content=${p.content}`, "overwrite"]);
+  const result = await execObsidian([
+    "create",
+    `path=${p.path}`,
+    `content=${p.content}`,
+    "overwrite",
+  ]);
   return success(result || `Wrote to note: ${p.path}`);
 }
 
-export async function noteAppend(p: { path: string; content: string }): Promise<ToolResult> {
+export async function noteAppend(p: {
+  path: string;
+  content: string;
+}): Promise<ToolResult> {
   p.path = validatePath(p.path);
-  const result = await execObsidian(["append", `path=${p.path}`, `content=${p.content}`]);
+  const result = await execObsidian([
+    "append",
+    `path=${p.path}`,
+    `content=${p.content}`,
+  ]);
   return success(result || `Appended to note: ${p.path}`);
 }
 
-export async function notePrepend(p: { path: string; content: string }): Promise<ToolResult> {
+export async function notePrepend(p: {
+  path: string;
+  content: string;
+}): Promise<ToolResult> {
   p.path = validatePath(p.path);
-  const result = await execObsidian(["prepend", `path=${p.path}`, `content=${p.content}`]);
+  const result = await execObsidian([
+    "prepend",
+    `path=${p.path}`,
+    `content=${p.content}`,
+  ]);
   return success(result || `Prepended to note: ${p.path}`);
 }
 
@@ -50,16 +72,30 @@ export async function noteDelete(p: { path: string }): Promise<ToolResult> {
   return success(result || `Deleted note: ${p.path}`);
 }
 
-export async function noteMove(p: { path: string; destination: string }): Promise<ToolResult> {
+export async function noteMove(p: {
+  path: string;
+  destination: string;
+}): Promise<ToolResult> {
   p.path = validatePath(p.path);
   p.destination = validatePath(p.destination);
-  const result = await execObsidian(["move", `path=${p.path}`, `to=${p.destination}`]);
+  const result = await execObsidian([
+    "move",
+    `path=${p.path}`,
+    `to=${p.destination}`,
+  ]);
   return success(result || `Moved note: ${p.path} → ${p.destination}`);
 }
 
-export async function noteSearch(p: { query: string; format?: string }): Promise<ToolResult> {
+export async function noteSearch(p: {
+  query: string;
+  format?: string;
+}): Promise<ToolResult> {
   const fmt = p.format || "json";
-  const result = await execObsidian(["search", `query=${p.query}`, `format=${fmt}`]);
+  const result = await execObsidian([
+    "search",
+    `query=${p.query}`,
+    `format=${fmt}`,
+  ]);
   return success(result || "No results found.");
 }
 
@@ -106,14 +142,33 @@ Actions:
 - list: List files in a folder (folder optional, defaults to vault root)`,
     {
       action: z
-        .enum(["create", "read", "write", "append", "prepend", "delete", "move", "search", "list"])
+        .enum([
+          "create",
+          "read",
+          "write",
+          "append",
+          "prepend",
+          "delete",
+          "move",
+          "search",
+          "list",
+        ])
         .describe("Action to perform"),
       path: z.string().optional().describe("Path to the note"),
       content: z.string().optional().describe("Note content"),
-      destination: z.string().optional().describe("Destination path (for move)"),
+      destination: z
+        .string()
+        .optional()
+        .describe("Destination path (for move)"),
       query: z.string().optional().describe("Search query (for search)"),
-      format: z.enum(["json", "text"]).optional().describe("Output format for search (default: json)"),
-      folder: z.string().optional().describe("Folder path (for list, defaults to vault root)"),
+      format: z
+        .enum(["json", "text"])
+        .optional()
+        .describe("Output format for search (default: json)"),
+      folder: z
+        .string()
+        .optional()
+        .describe("Folder path (for list, defaults to vault root)"),
       open: z.boolean().optional().describe("Open note after creating"),
       newtab: z.boolean().optional().describe("Open in a new tab"),
     },
@@ -123,6 +178,6 @@ Actions:
       } catch (e) {
         return error(`note.${params.action} failed: ${(e as Error).message}`);
       }
-    }
+    },
   );
 }
