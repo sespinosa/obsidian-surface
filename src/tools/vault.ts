@@ -63,10 +63,14 @@ export function register(server: McpServer): void {
     },
     async ({ filter }) => {
       try {
-        const args = ["commands"];
-        if (filter) args.push(filter);
-        const result = await execObsidian(args);
-        return success(result || "No commands found.");
+        const result = await execObsidian(["commands"]);
+        if (!result) return success("No commands found.");
+        if (!filter) return success(result);
+        const filtered = result
+          .split("\n")
+          .filter((line) => line.toLowerCase().includes(filter.toLowerCase()))
+          .join("\n");
+        return success(filtered || `No commands matching "${filter}".`);
       } catch (e) {
         return error(`Failed to list commands: ${(e as Error).message}`);
       }
