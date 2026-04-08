@@ -4,12 +4,6 @@ export const THOUGHTS_DIR = "_thoughts";
 
 export type RegisterFn = (server: McpServer) => void;
 
-export interface CliResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-}
-
 /** Format a successful tool result for MCP */
 export function success(text: string): { content: Array<{ type: "text"; text: string }> } {
   return { content: [{ type: "text", text }] };

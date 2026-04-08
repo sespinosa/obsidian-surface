@@ -64,7 +64,7 @@ export function register(server: McpServer): void {
     async ({ filter }) => {
       try {
         const args = ["commands"];
-        if (filter) args.push(`filter=${filter}`);
+        if (filter) args.push(filter);
         const result = await execObsidian(args);
         return success(result || "No commands found.");
       } catch (e) {

@@ -64,17 +64,12 @@ export function register(server: McpServer): void {
     "Toggle or control a sidebar in Obsidian",
     {
       side: z.enum(["left", "right"]).describe("Which sidebar"),
-      action: z
-        .enum(["toggle", "open", "close"])
-        .optional()
-        .describe("Action (default: toggle)"),
     },
-    async ({ side, action }) => {
+    async ({ side }) => {
       try {
-        const act = action || "toggle";
-        const commandId = `app:${act}-${side}-sidebar`;
+        const commandId = `app:toggle-${side}-sidebar`;
         const result = await execObsidian(["command", `id=${commandId}`]);
-        return success(result || `${act} ${side} sidebar.`);
+        return success(result || `Toggled ${side} sidebar.`);
       } catch (e) {
         return error(`Failed to control sidebar: ${(e as Error).message}`);
       }
