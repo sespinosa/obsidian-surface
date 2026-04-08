@@ -1,8 +1,8 @@
 import { execFile } from "node:child_process";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import { constants } from "node:fs";
 import { platform } from "node:os";
-import { glob } from "node:fs/promises";
+import { join } from "node:path";
 
 let cachedCliPath: string | null = null;
 let cachedIsWSL: boolean | null = null;
@@ -42,14 +42,16 @@ async function findOnPath(): Promise<string | null> {
   });
 }
 
-/** Find first matching file from a glob pattern */
-async function findByGlob(pattern: string): Promise<string | null> {
+/** Find Obsidian binary by scanning user directories */
+async function findObsidianInUserDirs(base: string, suffix: string): Promise<string | null> {
   try {
-    for await (const entry of glob(pattern)) {
-      return entry;
+    const users = await readdir(base);
+    for (const user of users) {
+      const candidate = join(base, user, suffix);
+      if (await isExecutable(candidate)) return candidate;
     }
   } catch {
-    // glob not supported or no match
+    // base dir doesn't exist or not readable
   }
   return null;
 }
@@ -77,18 +79,14 @@ async function resolveCliPath(): Promise<string> {
   const os = platform();
 
   if (isWsl || os === "win32") {
-    // WSL or Windows
-    const wslPath = await findByGlob("/mnt/c/Users/*/AppData/Local/Programs/Obsidian/Obsidian.com");
-    if (wslPath) {
-      cachedCliPath = wslPath;
+    const base = isWsl ? "/mnt/c/Users" : "C:\\Users";
+    const suffix = isWsl
+      ? "AppData/Local/Programs/Obsidian/Obsidian.com"
+      : "AppData\\Local\\Programs\\Obsidian\\Obsidian.com";
+    const found = await findObsidianInUserDirs(base, suffix);
+    if (found) {
+      cachedCliPath = found;
       return cachedCliPath;
-    }
-    if (os === "win32") {
-      const winPath = await findByGlob("C:\\Users\\*\\AppData\\Local\\Programs\\Obsidian\\Obsidian.com");
-      if (winPath) {
-        cachedCliPath = winPath;
-        return cachedCliPath;
-      }
     }
   }
 
