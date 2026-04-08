@@ -4,6 +4,9 @@ export const THOUGHTS_DIR = "_thoughts";
 
 export type RegisterFn = (server: McpServer) => void;
 
+/** Typed result from a tool handler */
+export type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: true };
+
 /** Format a successful tool result for MCP */
 export function success(text: string): { content: Array<{ type: "text"; text: string }> } {
   return { content: [{ type: "text", text }] };

@@ -3,18 +3,18 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { register as registerThoughts } from "./tools/thoughts.js";
-import { register as registerNotes } from "./tools/notes.js";
-import { register as registerNavigation } from "./tools/navigation.js";
-import { register as registerWorkspace } from "./tools/workspace.js";
+import { register as registerThought } from "./tools/thought.js";
+import { register as registerNote } from "./tools/note.js";
+import { register as registerLayout } from "./tools/layout.js";
 import { register as registerVault } from "./tools/vault.js";
 import { register as registerSearch } from "./tools/search.js";
-import { register as registerProperties } from "./tools/properties.js";
-import { register as registerTags } from "./tools/tags.js";
-import { register as registerTasks } from "./tools/tasks.js";
+import { register as registerProperty } from "./tools/property.js";
 import { register as registerDaily } from "./tools/daily.js";
-import { register as registerTemplates } from "./tools/templates.js";
+import { register as registerTag } from "./tools/tag.js";
+import { register as registerTask } from "./tools/task.js";
+import { register as registerTemplate } from "./tools/template.js";
 import { register as registerDev } from "./tools/dev.js";
+import { register as registerCompose } from "./tools/compose.js";
 
 const server = new McpServer({
   name: "obsidian-surface",
@@ -22,18 +22,18 @@ const server = new McpServer({
 });
 
 // Register all tool groups
-registerThoughts(server);
-registerNotes(server);
-registerNavigation(server);
-registerWorkspace(server);
+registerThought(server);
+registerNote(server);
+registerLayout(server);
 registerVault(server);
 registerSearch(server);
-registerProperties(server);
-registerTags(server);
-registerTasks(server);
+registerProperty(server);
 registerDaily(server);
-registerTemplates(server);
+registerTag(server);
+registerTask(server);
+registerTemplate(server);
 registerDev(server);
+registerCompose(server);
 
 // Connect via stdio transport
 const transport = new StdioServerTransport();
