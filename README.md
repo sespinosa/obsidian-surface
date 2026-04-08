@@ -31,14 +31,18 @@ Add to your MCP client config (e.g. Claude Code `~/.claude.json`):
       "args": ["-y", "obsidian-surface"],
       "env": {
         "OBSIDIAN_CLI_PATH": "/path/to/obsidian",
-        "OBSIDIAN_DEFAULT_PROJECT": "myproject"
+        "OBSIDIAN_DEFAULT_PROJECT": "myproject",
+        "OBSIDIAN_ENABLE_EVAL": "true"
       }
     }
   }
 }
 ```
 
-Both env vars are optional. The CLI path is auto-detected on all supported platforms. The default project falls back to `"default"`.
+All env vars are optional:
+- **`OBSIDIAN_CLI_PATH`** — Override CLI binary path (auto-detected on all platforms)
+- **`OBSIDIAN_DEFAULT_PROJECT`** — Set the default thoughts project (defaults to your current directory name)
+- **`OBSIDIAN_ENABLE_EVAL`** — Set to `"true"` to enable the `dev.eval` tool (disabled by default for security)
 
 ## Tools
 
@@ -162,7 +166,7 @@ Read and write YAML frontmatter on notes.
 
 | Action | Description | Params |
 |--------|-------------|--------|
-| `eval` | Execute JavaScript in the Obsidian app context | `code` required |
+| `eval` | Execute JavaScript in the Obsidian app context. **Requires `OBSIDIAN_ENABLE_EVAL=true`** | `code` required |
 | `screenshot` | Take a screenshot of the Obsidian window | `path` optional |
 
 ### `compose` — Multi-Step Operations
