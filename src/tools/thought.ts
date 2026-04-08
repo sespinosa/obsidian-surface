@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { execObsidian } from "../cli.js";
 import { getProject, setProject } from "../state.js";
-import { THOUGHTS_DIR, success, error, type ToolResult } from "../types.js";
+import { THOUGHTS_DIR, success, error, validatePath, type ToolResult } from "../types.js";
 import {
   appendEntry,
   removeEntriesByProject,
@@ -108,6 +108,7 @@ export async function thoughtEnrich(p: {
   tags?: string[];
   summary?: string;
 }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   // Read existing content
   const content = await execObsidian(["read", `path=${p.path}`]);
   if (!content) return error(`Could not read thought at ${p.path}`);

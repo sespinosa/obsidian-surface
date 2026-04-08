@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { success, error, validatePath, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -11,6 +11,7 @@ export async function noteCreate(p: {
   open?: boolean;
   newtab?: boolean;
 }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const args = ["create", `path=${p.path}`];
   if (p.content) args.push(`content=${p.content}`);
   if (p.open) args.push("open");
@@ -20,31 +21,38 @@ export async function noteCreate(p: {
 }
 
 export async function noteRead(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["read", `path=${p.path}`]);
   return success(result);
 }
 
 export async function noteWrite(p: { path: string; content: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["create", `path=${p.path}`, `content=${p.content}`, "overwrite"]);
   return success(result || `Wrote to note: ${p.path}`);
 }
 
 export async function noteAppend(p: { path: string; content: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["append", `path=${p.path}`, `content=${p.content}`]);
   return success(result || `Appended to note: ${p.path}`);
 }
 
 export async function notePrepend(p: { path: string; content: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["prepend", `path=${p.path}`, `content=${p.content}`]);
   return success(result || `Prepended to note: ${p.path}`);
 }
 
 export async function noteDelete(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["delete", `path=${p.path}`]);
   return success(result || `Deleted note: ${p.path}`);
 }
 
 export async function noteMove(p: { path: string; destination: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
+  p.destination = validatePath(p.destination);
   const result = await execObsidian(["move", `path=${p.path}`, `to=${p.destination}`]);
   return success(result || `Moved note: ${p.path} → ${p.destination}`);
 }
@@ -57,7 +65,10 @@ export async function noteSearch(p: { query: string; format?: string }): Promise
 
 export async function noteList(p: { folder?: string }): Promise<ToolResult> {
   const args = ["files"];
-  if (p.folder) args.push(`folder=${p.folder}`);
+  if (p.folder) {
+    p.folder = validatePath(p.folder);
+    args.push(`folder=${p.folder}`);
+  }
   const result = await execObsidian(args);
   return success(result || "No files found.");
 }

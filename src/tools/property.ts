@@ -1,26 +1,30 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { success, error, validatePath, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
 export async function propertyGet(p: { path: string; key: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["property:read", `path=${p.path}`, `key=${p.key}`]);
   return success(result || `Property "${p.key}" not found.`);
 }
 
 export async function propertySet(p: { path: string; key: string; value: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["property:set", `path=${p.path}`, `key=${p.key}`, `value=${p.value}`]);
   return success(result || `Set property "${p.key}" = "${p.value}" on ${p.path}`);
 }
 
 export async function propertyRemove(p: { path: string; key: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["property:remove", `path=${p.path}`, `key=${p.key}`]);
   return success(result || `Removed property "${p.key}" from ${p.path}`);
 }
 
 export async function propertyList(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["properties", `path=${p.path}`]);
   return success(result || "No properties found.");
 }

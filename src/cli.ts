@@ -123,6 +123,8 @@ export async function execObsidian(args: string[]): Promise<string> {
   const isWsl = await detectWSL();
 
   return new Promise((resolve, reject) => {
+    // Security: execFile is used instead of exec to avoid shell interpolation.
+    // Arguments are passed as an array, preventing command injection.
     execFile(
       cliPath,
       args,
