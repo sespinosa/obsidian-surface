@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { success, error, validatePath, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -18,16 +18,19 @@ export async function searchContext(p: { query: string }): Promise<ToolResult> {
 }
 
 export async function searchBacklinks(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["backlinks", `path=${p.path}`]);
   return success(result || "No backlinks found.");
 }
 
 export async function searchLinks(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["links", `path=${p.path}`]);
   return success(result || "No outgoing links found.");
 }
 
 export async function searchOutline(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["outline", `path=${p.path}`]);
   return success(result || "No headings found.");
 }

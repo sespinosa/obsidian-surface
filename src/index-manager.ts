@@ -10,6 +10,7 @@ export interface IndexEntry {
   type?: string;
   tags?: string[];
   summary?: string;
+  /** Note: contains local filesystem paths from the machine that created the thought */
   cwd?: string;
 }
 

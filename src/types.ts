@@ -16,3 +16,12 @@ export function success(text: string): { content: Array<{ type: "text"; text: st
 export function error(text: string): { content: Array<{ type: "text"; text: string }>; isError: true } {
   return { content: [{ type: "text", text }], isError: true };
 }
+
+/** Validate and normalize a vault-relative path — rejects traversal and absolute paths */
+export function validatePath(path: string): string {
+  if (path.includes("..")) throw new Error("Path traversal not allowed");
+  if (path.startsWith("/") || /^[A-Z]:\\/i.test(path)) {
+    throw new Error("Absolute paths not allowed — use vault-relative paths");
+  }
+  return path.replace(/\\/g, "/");
+}

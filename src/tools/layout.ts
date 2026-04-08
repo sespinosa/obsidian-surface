@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { execObsidian } from "../cli.js";
-import { success, error, type ToolResult } from "../types.js";
+import { success, error, validatePath, type ToolResult } from "../types.js";
 
 // --- Handler functions ---
 
@@ -38,12 +38,14 @@ export async function layoutFocus(p: { direction: string }): Promise<ToolResult>
 }
 
 export async function layoutOpen(p: { path: string }): Promise<ToolResult> {
+  p.path = validatePath(p.path);
   const result = await execObsidian(["open", `path=${p.path}`]);
   return success(result || `Opened: ${p.path}`);
 }
 
 export async function layoutTabs(p: { path?: string }): Promise<ToolResult> {
   if (p.path) {
+    p.path = validatePath(p.path);
     const args = ["tab:open", `path=${p.path}`];
     const result = await execObsidian(args);
     return success(result || "Opened new tab.");
