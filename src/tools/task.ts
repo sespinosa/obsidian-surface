@@ -1,7 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { error, success, type ToolResult } from "../types.js";
+import {
+  error,
+  type HandlerFn,
+  success,
+  type ToolResult,
+  validatePath,
+} from "../types.js";
 
 // --- Handler functions ---
 
@@ -10,7 +16,7 @@ export async function taskList(p: {
   status?: string;
 }): Promise<ToolResult> {
   const args = ["tasks"];
-  if (p.path) args.push(`path=${p.path}`);
+  if (p.path) args.push(`path=${validatePath(p.path)}`);
   if (p.status) args.push(`status=${p.status}`);
   const result = await execObsidian(args);
   return success(result || "No tasks found.");
@@ -21,20 +27,21 @@ export async function taskUpdate(p: {
   line: number;
   status: string;
 }): Promise<ToolResult> {
+  const path = validatePath(p.path);
   const result = await execObsidian([
     "task",
-    `path=${p.path}`,
+    `path=${path}`,
     `line=${p.line}`,
     `status=${p.status}`,
   ]);
   return success(
-    result || `Updated task at ${p.path}:${p.line} to status "${p.status}".`,
+    result || `Updated task at ${path}:${p.line} to status "${p.status}".`,
   );
 }
 
 // --- Handler map ---
 
-export const handlers: Record<string, (p: any) => Promise<ToolResult>> = {
+export const handlers: Record<string, HandlerFn> = {
   list: taskList,
   update: taskUpdate,
 };

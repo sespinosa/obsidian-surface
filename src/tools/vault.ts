@@ -1,7 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { error, success, type ToolResult } from "../types.js";
+import {
+  error,
+  type HandlerFn,
+  success,
+  type ToolResult,
+  validatePath,
+} from "../types.js";
 
 // --- Handler functions ---
 
@@ -14,7 +20,7 @@ export async function vaultFolders(p: {
   folder?: string;
 }): Promise<ToolResult> {
   const args = ["folders"];
-  if (p.folder) args.push(`folder=${p.folder}`);
+  if (p.folder) args.push(`folder=${validatePath(p.folder)}`);
   const result = await execObsidian(args);
   return success(result || "No folders found.");
 }
@@ -45,7 +51,7 @@ export async function vaultCommands(p: {
 
 // --- Handler map ---
 
-export const handlers: Record<string, (p: any) => Promise<ToolResult>> = {
+export const handlers: Record<string, HandlerFn> = {
   info: vaultInfo,
   folders: vaultFolders,
   command: vaultCommand,

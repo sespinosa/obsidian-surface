@@ -1,7 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { error, success, type ToolResult, validatePath } from "../types.js";
+import {
+  error,
+  type HandlerFn,
+  success,
+  type ToolResult,
+  validatePath,
+} from "../types.js";
 
 // --- Handler functions ---
 
@@ -71,7 +77,7 @@ export async function layoutRecents(): Promise<ToolResult> {
 
 // --- Handler map ---
 
-export const handlers: Record<string, (p: any) => Promise<ToolResult>> = {
+export const handlers: Record<string, HandlerFn> = {
   workspace: layoutWorkspace,
   split: layoutSplit,
   close: layoutClose,

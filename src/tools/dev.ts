@@ -1,7 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { error, success, type ToolResult } from "../types.js";
+import {
+  error,
+  type HandlerFn,
+  success,
+  type ToolResult,
+  validatePath,
+} from "../types.js";
 
 // --- Handler functions ---
 
@@ -12,14 +18,14 @@ export async function devEval(p: { code: string }): Promise<ToolResult> {
 
 export async function devScreenshot(p: { path?: string }): Promise<ToolResult> {
   const args = ["dev:screenshot"];
-  if (p.path) args.push(`path=${p.path}`);
+  if (p.path) args.push(`path=${validatePath(p.path)}`);
   const result = await execObsidian(args);
   return success(result || "Screenshot taken.");
 }
 
 // --- Handler map ---
 
-export const handlers: Record<string, (p: any) => Promise<ToolResult>> = {
+export const handlers: Record<string, HandlerFn> = {
   eval: devEval,
   screenshot: devScreenshot,
 };

@@ -1,7 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { execObsidian } from "../cli.js";
-import { error, success, type ToolResult } from "../types.js";
+import {
+  error,
+  type HandlerFn,
+  success,
+  type ToolResult,
+  validatePath,
+} from "../types.js";
 
 // --- Handler functions ---
 
@@ -11,18 +17,20 @@ export async function templateList(): Promise<ToolResult> {
 }
 
 export async function templateInsert(p: { name: string }): Promise<ToolResult> {
-  const result = await execObsidian(["template:insert", `name=${p.name}`]);
-  return success(result || `Inserted template: ${p.name}`);
+  const name = validatePath(p.name);
+  const result = await execObsidian(["template:insert", `name=${name}`]);
+  return success(result || `Inserted template: ${name}`);
 }
 
 export async function templateRead(p: { name: string }): Promise<ToolResult> {
-  const result = await execObsidian(["template:read", `name=${p.name}`]);
+  const name = validatePath(p.name);
+  const result = await execObsidian(["template:read", `name=${name}`]);
   return success(result);
 }
 
 // --- Handler map ---
 
-export const handlers: Record<string, (p: any) => Promise<ToolResult>> = {
+export const handlers: Record<string, HandlerFn> = {
   list: templateList,
   insert: templateInsert,
   read: templateRead,

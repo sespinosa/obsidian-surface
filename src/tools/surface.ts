@@ -11,8 +11,9 @@ import {
 import { getProject, setProject } from "../state.js";
 import {
   error,
-  success,
+  type HandlerFn,
   SURFACES_DIR,
+  success,
   type ToolResult,
   validatePath,
 } from "../types.js";
@@ -27,7 +28,8 @@ export async function surfaceCreate(p: {
   tags?: string[];
   cwd_override?: string;
 }): Promise<ToolResult> {
-  const project = getProject();
+  const name = validatePath(p.name);
+  const project = validatePath(getProject());
   const now = new Date().toISOString().replace(/\.\d{3}Z$/, "");
   const cwd = p.cwd_override || process.cwd();
 
@@ -45,7 +47,7 @@ export async function surfaceCreate(p: {
   frontmatter.push("---");
 
   const fullContent = `${frontmatter.join("\n")}\n\n${p.content}`;
-  const path = `${SURFACES_DIR}/${project}/${p.name}.md`;
+  const path = `${SURFACES_DIR}/${project}/${name}.md`;
 
   const result = await execObsidian([
     "create",
@@ -118,9 +120,9 @@ export async function surfaceEnrich(p: {
   tags?: string[];
   summary?: string;
 }): Promise<ToolResult> {
-  p.path = validatePath(p.path);
-  const content = await execObsidian(["read", `path=${p.path}`]);
-  if (!content) return error(`Could not read surface at ${p.path}`);
+  const path = validatePath(p.path);
+  const content = await execObsidian(["read", `path=${path}`]);
+  if (!content) return error(`Could not read surface at ${path}`);
 
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (!fmMatch) return error("No frontmatter found in surface.");
@@ -148,7 +150,7 @@ export async function surfaceEnrich(p: {
 
   await execObsidian([
     "create",
-    `path=${p.path}`,
+    `path=${path}`,
     `content=${newContent}`,
     "overwrite",
   ]);
@@ -163,7 +165,7 @@ export async function surfaceEnrich(p: {
           .filter(Boolean)
       : undefined);
   await appendEntry({
-    path: p.path,
+    path,
     project: fm.project || getProject(),
     created: fm.created || new Date().toISOString(),
     type: p.type || fm.type,
@@ -172,7 +174,7 @@ export async function surfaceEnrich(p: {
     cwd: fm.cwd,
   });
 
-  return success(`Enriched surface: ${p.path}`);
+  return success(`Enriched surface: ${path}`);
 }
 
 export async function surfaceReindex(): Promise<ToolResult> {
@@ -183,7 +185,7 @@ export async function surfaceReindex(): Promise<ToolResult> {
 export async function surfaceClear(p: {
   project?: string;
 }): Promise<ToolResult> {
-  const proj = p.project || getProject();
+  const proj = validatePath(p.project || getProject());
   const filesOutput = await execObsidian([
     "files",
     `folder=${SURFACES_DIR}/${proj}`,
@@ -206,8 +208,9 @@ export async function surfaceClear(p: {
 }
 
 export async function projectSet(p: { name: string }): Promise<ToolResult> {
-  setProject(p.name);
-  return success(`Active project set to "${p.name}".`);
+  const name = validatePath(p.name);
+  setProject(name);
+  return success(`Active project set to "${name}".`);
 }
 
 export async function projectList(): Promise<ToolResult> {
@@ -222,12 +225,14 @@ export async function projectRename(p: {
   from: string;
   to: string;
 }): Promise<ToolResult> {
+  const from = validatePath(p.from);
+  const to = validatePath(p.to);
   const filesOutput = await execObsidian([
     "files",
-    `folder=${SURFACES_DIR}/${p.from}`,
+    `folder=${SURFACES_DIR}/${from}`,
   ]);
   if (!filesOutput)
-    return success(`Project "${p.from}" is empty or does not exist.`);
+    return success(`Project "${from}" is empty or does not exist.`);
 
   const files = filesOutput.split("\n").filter(Boolean);
   for (const file of files) {
@@ -235,21 +240,21 @@ export async function projectRename(p: {
     if (filename) {
       await execObsidian([
         "move",
-        `path=${SURFACES_DIR}/${p.from}/${filename}`,
-        `to=${SURFACES_DIR}/${p.to}/${filename}`,
+        `path=${SURFACES_DIR}/${from}/${filename}`,
+        `to=${SURFACES_DIR}/${to}/${filename}`,
       ]);
     }
   }
 
-  if (getProject() === p.from) setProject(p.to);
+  if (getProject() === from) setProject(to);
   return success(
-    `Renamed project "${p.from}" to "${p.to}" (${files.length} file(s) moved).`,
+    `Renamed project "${from}" to "${to}" (${files.length} file(s) moved).`,
   );
 }
 
 // --- Handler map ---
 
-export const handlers: Record<string, (p: any) => Promise<ToolResult>> = {
+export const handlers: Record<string, HandlerFn> = {
   create: surfaceCreate,
   list: surfaceList,
   index: surfaceIndex,
@@ -307,7 +312,9 @@ Actions:
       type: z
         .string()
         .optional()
-        .describe("Type of surface (e.g. research, design, comparison, diagram)"),
+        .describe(
+          "Type of surface (e.g. research, design, comparison, diagram)",
+        ),
       tags: z.array(z.string()).optional().describe("Tags for the surface"),
       project: z
         .string()

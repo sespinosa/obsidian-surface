@@ -1,22 +1,19 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { error, success, type ToolResult } from "../types.js";
+import { error, type HandlerFn, success } from "../types.js";
 import { handlers as dailyHandlers } from "./daily.js";
 import { handlers as devHandlers } from "./dev.js";
 import { handlers as layoutHandlers } from "./layout.js";
 import { handlers as noteHandlers } from "./note.js";
 import { handlers as propertyHandlers } from "./property.js";
 import { handlers as searchHandlers } from "./search.js";
+import { handlers as surfaceHandlers } from "./surface.js";
 import { handlers as tagHandlers } from "./tag.js";
 import { handlers as taskHandlers } from "./task.js";
 import { handlers as templateHandlers } from "./template.js";
-import { handlers as surfaceHandlers } from "./surface.js";
 import { handlers as vaultHandlers } from "./vault.js";
 
-const toolMap: Record<
-  string,
-  Record<string, (p: any) => Promise<ToolResult>>
-> = {
+const toolMap: Record<string, Record<string, HandlerFn>> = {
   surface: surfaceHandlers,
   note: noteHandlers,
   layout: layoutHandlers,
@@ -78,7 +75,10 @@ Example:
 
       for (const step of steps) {
         const handlers = toolMap[step.tool];
-        const handler = handlers?.[step.action];
+        const handler =
+          handlers && Object.hasOwn(handlers, step.action)
+            ? handlers[step.action]
+            : undefined;
 
         if (!handler) {
           results.push({

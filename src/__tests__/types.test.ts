@@ -8,10 +8,18 @@ describe("validatePath", () => {
     );
   });
 
-  it("rejects embedded path traversal", () => {
-    expect(() => validatePath("folder/../secret")).toThrow(
+  it("normalizes embedded traversal that stays within vault", () => {
+    expect(validatePath("folder/../secret")).toBe("secret");
+  });
+
+  it("rejects traversal that escapes vault root", () => {
+    expect(() => validatePath("folder/../../secret")).toThrow(
       "Path traversal not allowed",
     );
+  });
+
+  it("rejects null bytes", () => {
+    expect(() => validatePath("folder/\0evil")).toThrow("Invalid path");
   });
 
   it("rejects absolute unix paths", () => {

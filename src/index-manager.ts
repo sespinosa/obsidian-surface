@@ -1,7 +1,19 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { execObsidian } from "./cli.js";
+import { detectWSL, execObsidian } from "./cli.js";
 import { SURFACES_DIR } from "./types.js";
+
+/** Convert a Windows path to WSL path if running under WSL */
+async function toFsPath(windowsPath: string): Promise<string> {
+  if (await detectWSL()) {
+    // Convert C:\Users\foo\bar → /mnt/c/Users/foo/bar
+    const match = windowsPath.match(/^([A-Z]):\\(.*)/i);
+    if (match) {
+      return `/mnt/${match[1].toLowerCase()}/${match[2].replace(/\\/g, "/")}`;
+    }
+  }
+  return windowsPath;
+}
 
 export interface IndexEntry {
   path: string;
@@ -10,7 +22,7 @@ export interface IndexEntry {
   type?: string;
   tags?: string[];
   summary?: string;
-  /** Note: contains local filesystem paths from the machine that created the thought */
+  /** Note: contains local filesystem paths from the machine that created the surface */
   cwd?: string;
 }
 
@@ -30,7 +42,7 @@ async function resolveVaultPath(): Promise<string> {
   for (const line of output.split("\n")) {
     const [key, ...rest] = line.split("\t");
     if (key?.trim().toLowerCase() === "path") {
-      cachedVaultPath = rest.join("\t").trim();
+      cachedVaultPath = await toFsPath(rest.join("\t").trim());
       return cachedVaultPath;
     }
   }
@@ -82,13 +94,6 @@ export async function removeEntriesByProject(project: string): Promise<number> {
   const removed = before - index.entries.length;
   if (removed > 0) await writeIndex(index);
   return removed;
-}
-
-/** Remove a single entry by path */
-export async function removeEntry(path: string): Promise<void> {
-  const index = await readIndex();
-  index.entries = index.entries.filter((e) => e.path !== path);
-  await writeIndex(index);
 }
 
 /** Query the index with optional filters */
@@ -162,17 +167,17 @@ function parseFrontmatter(content: string): Record<string, string | string[]> {
   return fm;
 }
 
-/** Rebuild the entire index by scanning all thought files */
+/** Rebuild the entire index by scanning all surface files */
 export async function reindex(): Promise<number> {
   const vaultPath = await resolveVaultPath();
-  const thoughtsRoot = join(vaultPath, SURFACES_DIR);
+  const surfacesRoot = join(vaultPath, SURFACES_DIR);
   const entries: IndexEntry[] = [];
 
   let projects: string[];
   try {
-    projects = await readdir(thoughtsRoot);
+    projects = await readdir(surfacesRoot);
   } catch {
-    // Thoughts directory doesn't exist yet
+    // Surfaces directory doesn't exist yet
     const index: Index = {
       version: 1,
       updated: new Date().toISOString(),
@@ -186,7 +191,7 @@ export async function reindex(): Promise<number> {
     // Skip files/dirs starting with _
     if (project.startsWith("_")) continue;
 
-    const projectDir = join(thoughtsRoot, project);
+    const projectDir = join(surfacesRoot, project);
     const projectStat = await stat(projectDir).catch(() => null);
     if (!projectStat?.isDirectory()) continue;
 

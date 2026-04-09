@@ -9,10 +9,10 @@ import { register as registerLayout } from "./tools/layout.js";
 import { register as registerNote } from "./tools/note.js";
 import { register as registerProperty } from "./tools/property.js";
 import { register as registerSearch } from "./tools/search.js";
+import { register as registerSurface } from "./tools/surface.js";
 import { register as registerTag } from "./tools/tag.js";
 import { register as registerTask } from "./tools/task.js";
 import { register as registerTemplate } from "./tools/template.js";
-import { register as registerSurface } from "./tools/surface.js";
 import { register as registerVault } from "./tools/vault.js";
 
 const server = new McpServer({

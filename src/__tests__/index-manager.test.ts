@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock the cli module
 vi.mock("../cli.js", () => ({
   execObsidian: vi.fn(),
+  detectWSL: vi.fn(() => Promise.resolve(false)),
 }));
 
 // Mock fs/promises

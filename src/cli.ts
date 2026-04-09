@@ -120,6 +120,9 @@ async function resolveCliPath(): Promise<string> {
   );
 }
 
+/** Check if running under WSL */
+export { detectWSL };
+
 /** Execute an Obsidian CLI command and return stdout */
 export async function execObsidian(args: string[]): Promise<string> {
   const cliPath = await resolveCliPath();
