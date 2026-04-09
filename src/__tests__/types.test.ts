@@ -51,4 +51,22 @@ describe("validatePath", () => {
   it("accepts simple filenames", () => {
     expect(validatePath("note.md")).toBe("note.md");
   });
+
+  it("rejects windows forward-slash absolute paths", () => {
+    expect(() => validatePath("C:/Users/foo/bar")).toThrow(
+      "Absolute paths not allowed",
+    );
+  });
+
+  it("rejects UNC paths", () => {
+    expect(() => validatePath("\\\\server\\share")).toThrow(
+      "Absolute paths not allowed",
+    );
+  });
+
+  it("rejects newlines", () => {
+    expect(() => validatePath("folder\nevil")).toThrow(
+      "newlines not allowed",
+    );
+  });
 });

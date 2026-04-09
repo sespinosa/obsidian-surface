@@ -30,10 +30,17 @@ export type HandlerFn = (p: any) => Promise<ToolResult>;
 /** Validate and normalize a vault-relative path — rejects traversal and absolute paths */
 export function validatePath(path: string): string {
   if (path.includes("\0")) throw new Error("Invalid path");
-  if (path.startsWith("/") || /^[A-Z]:\\/i.test(path)) {
+  if (path.includes("\n") || path.includes("\r")) {
+    throw new Error("Invalid path — newlines not allowed");
+  }
+  // Normalize backslashes first, then check all absolute path forms
+  const normalized = posix.normalize(path.replace(/\\/g, "/"));
+  if (
+    normalized.startsWith("/") ||
+    /^[A-Z]:/i.test(normalized)
+  ) {
     throw new Error("Absolute paths not allowed — use vault-relative paths");
   }
-  const normalized = posix.normalize(path.replace(/\\/g, "/"));
   if (normalized.startsWith("..") || normalized.includes("/..")) {
     throw new Error("Path traversal not allowed");
   }

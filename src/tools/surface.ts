@@ -33,14 +33,17 @@ export async function surfaceCreate(p: {
   const now = new Date().toISOString().replace(/\.\d{3}Z$/, "");
   const cwd = p.cwd_override || process.cwd();
 
+  // Sanitize frontmatter values — strip newlines to prevent YAML injection
+  const sanitize = (v: string) => v.replace(/[\r\n]+/g, " ").trim();
+
   const frontmatter = [
     "---",
-    `project: ${project}`,
+    `project: ${sanitize(project)}`,
     `created: ${now}`,
-    `summary: ${p.summary}`,
-    `cwd: ${cwd}`,
+    `summary: "${sanitize(p.summary)}"`,
+    `cwd: "${sanitize(cwd)}"`,
   ];
-  if (p.type) frontmatter.push(`type: ${p.type}`);
+  if (p.type) frontmatter.push(`type: ${sanitize(p.type)}`);
   if (p.tags && p.tags.length > 0) {
     frontmatter.push(`tags: [${p.tags.join(", ")}]`);
   }
