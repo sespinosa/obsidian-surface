@@ -9,44 +9,120 @@ MCP server that turns [Obsidian](https://obsidian.md) into a display surface and
 
 ## What is this?
 
-An MCP server that lets AI tools use Obsidian as a rich display surface — showing formatted documents, diagrams, tables, and research notes — instead of dumping text in a terminal. It also provides a full knowledge workspace with note CRUD, search, tagging, and project organization.
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that lets AI assistants like Claude, Cursor, or any MCP-compatible tool use your Obsidian vault as a rich display surface. Instead of dumping text in a terminal, your AI can create formatted documents, diagrams, tables, and research notes — and show them to you in Obsidian.
 
-Not Claude-specific. Works with any [MCP](https://modelcontextprotocol.io) client. Backed by the [Obsidian CLI](https://obsidian.md) (v1.12+).
+It also provides a **thoughts system** — a running log of research, decisions, and analysis that persists across sessions, so your AI remembers what you've worked on.
 
-## Prerequisites
+Backed by the [Obsidian CLI](https://obsidian.md) (v1.12+).
 
-- **Obsidian v1.12+** with CLI enabled (Settings → General → Command line interface)
-- **Node.js 20+**
-- **Obsidian must be running** — the CLI communicates with the running app
+## Quick Start
 
-## Installation & Configuration
+**1. Prerequisites:**
+- [Obsidian](https://obsidian.md) v1.12+ installed and running
+- CLI enabled: Obsidian → Settings → General → Command line interface → turn it on
+- [Node.js](https://nodejs.org) 20+
 
-Add to your MCP client config (e.g. Claude Code `~/.claude.json`):
+**2. Add to your AI tool's MCP config:**
+
+<details>
+<summary><strong>Claude Code</strong> (recommended)</summary>
+
+Add to `~/.claude/settings.json` under `mcpServers`:
 
 ```json
 {
   "mcpServers": {
     "obsidian-surface": {
       "command": "npx",
-      "args": ["-y", "obsidian-surface"],
-      "env": {
-        "OBSIDIAN_CLI_PATH": "/path/to/obsidian",
-        "OBSIDIAN_DEFAULT_PROJECT": "myproject",
-        "OBSIDIAN_ENABLE_EVAL": "true"
-      }
+      "args": ["-y", "obsidian-surface"]
     }
   }
 }
 ```
 
-All env vars are optional:
-- **`OBSIDIAN_CLI_PATH`** — Override CLI binary path (auto-detected on all platforms)
-- **`OBSIDIAN_DEFAULT_PROJECT`** — Set the default thoughts project (defaults to your current directory name)
-- **`OBSIDIAN_ENABLE_EVAL`** — Set to `"true"` to enable the `dev.eval` tool (disabled by default for security)
+Or add per-project in `.mcp.json` at your project root.
+</details>
+
+<details>
+<summary><strong>Claude Desktop</strong></summary>
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "obsidian-surface": {
+      "command": "npx",
+      "args": ["-y", "obsidian-surface"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><strong>Cursor / Windsurf / other MCP clients</strong></summary>
+
+Follow your client's MCP server configuration docs. The server command is:
+
+```
+npx -y obsidian-surface
+```
+
+No arguments needed. The server auto-detects your Obsidian CLI.
+</details>
+
+**3. Verify it works:**
+
+Restart your AI tool, then ask:
+
+> "What's in my Obsidian vault?"
+
+If it answers with your vault name and file count, you're set.
+
+## How It Works
+
+You talk to your AI normally. When it needs to show you something or save research, it uses obsidian-surface to create and display content in Obsidian.
+
+**Example prompts:**
+
+- *"Research the pros and cons of REST vs GraphQL and save your findings"* → creates a thought in your vault with a formatted comparison
+- *"Show me a side-by-side of the old and new API design"* → creates two notes and splits the Obsidian pane
+- *"What did we discuss about the database migration last week?"* → queries the thoughts index to find prior research
+
+The AI handles all the MCP calls — you never write JSON or call tools manually.
+
+## Environment Variables
+
+All optional. Most users don't need any of these:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OBSIDIAN_CLI_PATH` | Auto-detected | Override the Obsidian CLI binary path |
+| `OBSIDIAN_DEFAULT_PROJECT` | Current directory name | Set the default thoughts project |
+| `OBSIDIAN_ENABLE_EVAL` | `false` | Set to `"true"` to enable JavaScript execution in Obsidian (advanced/dangerous) |
+
+Add env vars to your MCP config if needed:
+
+```json
+{
+  "obsidian-surface": {
+    "command": "npx",
+    "args": ["-y", "obsidian-surface"],
+    "env": {
+      "OBSIDIAN_DEFAULT_PROJECT": "my-project"
+    }
+  }
+}
+```
+
+## Which Vault Does It Connect To?
+
+The Obsidian CLI connects to whichever vault is currently open in Obsidian. If you have multiple vaults, make sure the one you want is open and active.
 
 ## Tools
 
-obsidian-surface exposes 12 tools, each with multiple actions invoked via an `action` parameter. One tool call = one operation.
+obsidian-surface exposes 12 tools, each with multiple actions. Your AI uses these automatically — you don't need to call them directly.
 
 ### `thought` — Thoughts System
 
@@ -166,30 +242,30 @@ Read and write YAML frontmatter on notes.
 
 | Action | Description | Params |
 |--------|-------------|--------|
-| `eval` | Execute JavaScript in the Obsidian app context. **Requires `OBSIDIAN_ENABLE_EVAL=true`** | `code` required |
+| `eval` | Execute JavaScript in the Obsidian app context. **Requires `OBSIDIAN_ENABLE_EVAL=true` env var.** Disabled by default for security. | `code` required |
 | `screenshot` | Take a screenshot of the Obsidian window | `path` optional |
 
 ### `compose` — Multi-Step Operations
 
-Execute multiple operations sequentially as a single atomic action. Eliminates intermediate focus shifts and reduces round-trips. Execution stops on first error.
+Execute multiple operations sequentially as a single atomic action. The AI uses this to set up layouts, create multiple notes, or perform multi-step workflows — all in one call, without focus-stealing between steps.
 
-**Params:** `steps` — an array of `{ tool, action, params }` objects.
+**Example:** You say *"Create a comparison of REST vs GraphQL and show it next to my existing API notes"*. The AI internally calls:
 
 ```json
 {
   "steps": [
-    { "tool": "note", "action": "create", "params": { "path": "research/api-design.md", "content": "# API Design\n\nNotes on the new API..." } },
-    { "tool": "layout", "action": "open", "params": { "path": "research/api-design.md" } },
-    { "tool": "layout", "action": "split", "params": { "direction": "vertical" } }
+    { "tool": "note", "action": "create", "params": { "path": "research/rest-vs-graphql.md", "content": "# REST vs GraphQL\n\n..." } },
+    { "tool": "layout", "action": "split", "params": { "direction": "vertical" } },
+    { "tool": "layout", "action": "open", "params": { "path": "research/rest-vs-graphql.md" } }
   ]
 }
 ```
 
-This creates a note, opens it in Obsidian, and splits the pane — in a single tool call.
+You see the final result in Obsidian — two panes, side by side.
 
 ## Thoughts System
 
-The thoughts system provides a running log of research, decisions, and analysis that persists across sessions. Thoughts are organized by project under `_thoughts/{project}/` in your vault.
+The thoughts system is a running log organized by project. Your AI uses it to save research, decisions, and analysis that persist across sessions.
 
 ```
 _thoughts/
@@ -201,12 +277,12 @@ _thoughts/
     └── ...
 ```
 
-Each thought includes YAML frontmatter for fast discovery:
+Each thought includes YAML frontmatter:
 
 ```yaml
 ---
 project: my-project
-created: 2025-06-15T14:30:00
+created: 2026-04-08T14:30:00
 summary: Analysis of REST vs GraphQL tradeoffs
 cwd: /home/user/my-project
 type: research
@@ -214,17 +290,19 @@ tags: [api, architecture]
 ---
 ```
 
-- **Project** is auto-derived from your working directory name, or set explicitly with `project_set`
-- The **index** tracks all thoughts' metadata for fast querying without reading file contents
-- Use `index` at session start to discover prior knowledge; use `recent` to see the latest across all projects
+- **Project** is auto-derived from your working directory name (e.g. if you're in `/home/user/my-project`, the project is `my-project`). Can also be set explicitly.
+- A **frontmatter index** (`_thoughts/_index.json`) tracks all thoughts' metadata for fast querying without reading every file.
+- The AI uses `index` at session start to see what prior knowledge exists, and `recent` to catch up on latest work.
 
 ## CLI Path Resolution
 
-The Obsidian CLI binary is resolved in this order:
+The Obsidian CLI binary is auto-detected. You only need `OBSIDIAN_CLI_PATH` if auto-detection fails.
 
-1. **`OBSIDIAN_CLI_PATH`** environment variable (explicit override)
-2. **`obsidian` on PATH** (e.g. if symlinked or installed globally)
-3. **Platform auto-detection:**
+Resolution order:
+
+1. `OBSIDIAN_CLI_PATH` environment variable
+2. `obsidian` on PATH
+3. Platform auto-detection:
 
 | Platform | Auto-detected Path |
 |----------|-------------------|
@@ -233,23 +311,15 @@ The Obsidian CLI binary is resolved in this order:
 | Linux | `/snap/obsidian/current/obsidian`, flatpak paths |
 | WSL | `/mnt/c/Users/*/AppData/Local/Programs/Obsidian/Obsidian.com` |
 
-WSL is automatically detected. The server sets `cwd` to `/mnt/c` before CLI execution to work around UNC path issues.
-
-## Platform Support
-
-| Platform | Status | Notes |
-|----------|--------|-------|
-| Windows | Supported | Auto-detects CLI in AppData |
-| macOS | Supported | Auto-detects CLI in /Applications |
-| Linux | Supported | Snap and Flatpak auto-detected |
-| WSL | Supported | Auto-detects Windows CLI, handles UNC paths |
+WSL is automatically detected and handles UNC path workarounds.
 
 ## Privacy
 
-- All data stays local in your Obsidian vault
-- The `cwd` field in thought frontmatter records which directory you were working in — this is stored only in your vault
-- No data is transmitted to external services
-- Communication uses stdio transport only (stdin/stdout between MCP client and server)
+- **All data stays local** in your Obsidian vault
+- The `cwd` field in thought frontmatter records which directory you were working in — stored only in your vault
+- **No data is transmitted** to external services
+- Communication uses stdio transport only (stdin/stdout between MCP client and this server)
+- The server does not access the internet
 
 ## Development
 
@@ -259,6 +329,7 @@ cd obsidian-surface
 npm install
 npm run build
 npm test
+npm run lint
 ```
 
 ## License
