@@ -11,7 +11,7 @@ MCP server that turns [Obsidian](https://obsidian.md) into a display surface and
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that lets AI assistants like Claude, Cursor, or any MCP-compatible tool use your Obsidian vault as a rich display surface. Instead of dumping text in a terminal, your AI can create formatted documents, diagrams, tables, and research notes — and show them to you in Obsidian.
 
-It also provides a **thoughts system** — a running log of research, decisions, and analysis that persists across sessions, so your AI remembers what you've worked on.
+It also provides a **surfaces system** — a running log of research, decisions, and analysis that persists across sessions, so your AI remembers what you've worked on.
 
 Backed by the [Obsidian CLI](https://obsidian.md) (v1.12+).
 
@@ -86,9 +86,9 @@ You talk to your AI normally. When it needs to show you something or save resear
 
 **Example prompts:**
 
-- *"Research the pros and cons of REST vs GraphQL and save your findings"* → creates a thought in your vault with a formatted comparison
+- *"Research the pros and cons of REST vs GraphQL and save your findings"* → creates a surface in your vault with a formatted comparison
 - *"Show me a side-by-side of the old and new API design"* → creates two notes and splits the Obsidian pane
-- *"What did we discuss about the database migration last week?"* → queries the thoughts index to find prior research
+- *"What did we discuss about the database migration last week?"* → queries the surfaces index to find prior research
 
 The AI handles all the MCP calls — you never write JSON or call tools manually.
 
@@ -99,8 +99,7 @@ All optional. Most users don't need any of these:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OBSIDIAN_CLI_PATH` | Auto-detected | Override the Obsidian CLI binary path |
-| `OBSIDIAN_DEFAULT_PROJECT` | Current directory name | Set the default thoughts project |
-| `OBSIDIAN_ENABLE_EVAL` | `false` | Set to `"true"` to enable JavaScript execution in Obsidian (advanced/dangerous) |
+| `OBSIDIAN_DEFAULT_PROJECT` | Current directory name | Set the default surfaces project |
 
 Add env vars to your MCP config if needed:
 
@@ -124,19 +123,19 @@ The Obsidian CLI connects to whichever vault is currently open in Obsidian. If y
 
 obsidian-surface exposes 12 tools, each with multiple actions. Your AI uses these automatically — you don't need to call them directly.
 
-### `thought` — Thoughts System
+### `surface` — Display Surfaces
 
-A running log of research, decisions, and analysis that persists across sessions.
+Rich rendered artifacts (documents, diagrams, tables, comparisons) that persist across sessions.
 
 | Action | Description | Params |
 |--------|-------------|--------|
-| `create` | Create a thought with frontmatter, opens in Obsidian | `name`, `content`, `summary` required; `type`, `tags`, `cwd_override` optional |
-| `list` | List thoughts in a project with metadata | `project` optional (defaults to active) |
+| `create` | Create a surface with frontmatter, opens in Obsidian | `name`, `content`, `summary` required; `type`, `tags`, `cwd_override` optional |
+| `list` | List surfaces in a project with metadata | `project` optional (defaults to active) |
 | `index` | Query the frontmatter index | `project`, `type`, `tags`, `since`, `query` — all optional filters |
-| `recent` | Get N most recent thoughts across all projects | `limit` optional (default 10) |
-| `enrich` | Update a thought's frontmatter without changing content | `path` required; `type`, `tags`, `summary` optional |
-| `reindex` | Rebuild the index by scanning all thought files | — |
-| `clear` | Delete all thoughts in a project | `project` optional |
+| `recent` | Get N most recent surfaces across all projects | `limit` optional (default 10) |
+| `enrich` | Update a surface's frontmatter without changing content | `path` required; `type`, `tags`, `summary` optional |
+| `reindex` | Rebuild the index by scanning all surface files | — |
+| `clear` | Delete all surfaces in a project | `project` optional |
 | `project_set` | Set the active project | `name` required |
 | `project_list` | List all projects | — |
 | `project_rename` | Rename a project | `from`, `to` required |
@@ -242,7 +241,7 @@ Read and write YAML frontmatter on notes.
 
 | Action | Description | Params |
 |--------|-------------|--------|
-| `eval` | Execute JavaScript in the Obsidian app context. **Requires `OBSIDIAN_ENABLE_EVAL=true` env var.** Disabled by default for security. | `code` required |
+| `eval` | Execute JavaScript in the Obsidian app context | `code` required |
 | `screenshot` | Take a screenshot of the Obsidian window | `path` optional |
 
 ### `compose` — Multi-Step Operations
@@ -263,12 +262,12 @@ Execute multiple operations sequentially as a single atomic action. The AI uses 
 
 You see the final result in Obsidian — two panes, side by side.
 
-## Thoughts System
+## Surfaces System
 
-The thoughts system is a running log organized by project. Your AI uses it to save research, decisions, and analysis that persist across sessions.
+The surfaces system is a running log organized by project. Your AI uses it to save research, decisions, and analysis that persist across sessions.
 
 ```
-_thoughts/
+_surfaces/
 ├── my-project/
 │   ├── api-research.md
 │   ├── design-decisions.md
@@ -277,7 +276,7 @@ _thoughts/
     └── ...
 ```
 
-Each thought includes YAML frontmatter:
+Each surface includes YAML frontmatter:
 
 ```yaml
 ---
@@ -291,7 +290,7 @@ tags: [api, architecture]
 ```
 
 - **Project** is auto-derived from your working directory name (e.g. if you're in `/home/user/my-project`, the project is `my-project`). Can also be set explicitly.
-- A **frontmatter index** (`_thoughts/_index.json`) tracks all thoughts' metadata for fast querying without reading every file.
+- A **frontmatter index** (`_surfaces/_index.json`) tracks all surfaces' metadata for fast querying without reading every file.
 - The AI uses `index` at session start to see what prior knowledge exists, and `recent` to catch up on latest work.
 
 ## CLI Path Resolution
@@ -316,7 +315,7 @@ WSL is automatically detected and handles UNC path workarounds.
 ## Privacy
 
 - **All data stays local** in your Obsidian vault
-- The `cwd` field in thought frontmatter records which directory you were working in — stored only in your vault
+- The `cwd` field in surface frontmatter records which directory you were working in — stored only in your vault
 - **No data is transmitted** to external services
 - Communication uses stdio transport only (stdin/stdout between MCP client and this server)
 - The server does not access the internet

@@ -12,7 +12,7 @@ import { register as registerSearch } from "./tools/search.js";
 import { register as registerTag } from "./tools/tag.js";
 import { register as registerTask } from "./tools/task.js";
 import { register as registerTemplate } from "./tools/template.js";
-import { register as registerThought } from "./tools/thought.js";
+import { register as registerSurface } from "./tools/surface.js";
 import { register as registerVault } from "./tools/vault.js";
 
 const server = new McpServer({
@@ -21,7 +21,7 @@ const server = new McpServer({
 });
 
 // Register all tool groups
-registerThought(server);
+registerSurface(server);
 registerNote(server);
 registerLayout(server);
 registerVault(server);

@@ -17,7 +17,7 @@ vi.mock("../../state.js", () => ({
   setProject: vi.fn(),
 }));
 
-describe("thought handlers", () => {
+describe("surface handlers", () => {
   let execObsidian: ReturnType<typeof vi.fn>;
   let appendEntry: ReturnType<typeof vi.fn>;
   let queryIndex: ReturnType<typeof vi.fn>;
@@ -32,21 +32,21 @@ describe("thought handlers", () => {
     queryIndex = vi.mocked(indexManager.queryIndex);
   });
 
-  describe("thoughtCreate", () => {
+  describe("surfaceCreate", () => {
     it("calls execObsidian with correct arguments", async () => {
       execObsidian.mockResolvedValue("Created");
       appendEntry.mockResolvedValue(undefined);
 
-      const { thoughtCreate } = await import("../../tools/thought.js");
-      const result = await thoughtCreate({
-        name: "my-thought",
+      const { surfaceCreate } = await import("../../tools/surface.js");
+      const result = await surfaceCreate({
+        name: "my-surface",
         content: "Some content",
         summary: "A summary",
       });
 
       expect(execObsidian).toHaveBeenCalledWith([
         "create",
-        expect.stringContaining("path=_thoughts/test-project/my-thought.md"),
+        expect.stringContaining("path=_surfaces/test-project/my-surface.md"),
         expect.stringContaining("content="),
         "open",
         "newtab",
@@ -59,9 +59,9 @@ describe("thought handlers", () => {
       execObsidian.mockResolvedValue("Created");
       appendEntry.mockResolvedValue(undefined);
 
-      const { thoughtCreate } = await import("../../tools/thought.js");
-      await thoughtCreate({
-        name: "tagged-thought",
+      const { surfaceCreate } = await import("../../tools/surface.js");
+      await surfaceCreate({
+        name: "tagged-surface",
         content: "Content",
         summary: "Summary",
         type: "research",
@@ -77,9 +77,9 @@ describe("thought handlers", () => {
       execObsidian.mockResolvedValue("Created");
       appendEntry.mockResolvedValue(undefined);
 
-      const { thoughtCreate } = await import("../../tools/thought.js");
-      await thoughtCreate({
-        name: "indexed-thought",
+      const { surfaceCreate } = await import("../../tools/surface.js");
+      await surfaceCreate({
+        name: "indexed-surface",
         content: "Content",
         summary: "My summary",
         type: "decision",
@@ -88,7 +88,7 @@ describe("thought handlers", () => {
 
       expect(appendEntry).toHaveBeenCalledWith(
         expect.objectContaining({
-          path: "_thoughts/test-project/indexed-thought.md",
+          path: "_surfaces/test-project/indexed-surface.md",
           project: "test-project",
           type: "decision",
           tags: ["tag1"],
@@ -101,22 +101,22 @@ describe("thought handlers", () => {
       execObsidian.mockResolvedValue("");
       appendEntry.mockResolvedValue(undefined);
 
-      const { thoughtCreate } = await import("../../tools/thought.js");
-      const result = await thoughtCreate({
+      const { surfaceCreate } = await import("../../tools/surface.js");
+      const result = await surfaceCreate({
         name: "empty-result",
         content: "Content",
         summary: "Summary",
       });
 
-      expect(result.content[0].text).toContain("Created thought:");
+      expect(result.content[0].text).toContain("Created surface:");
     });
   });
 
-  describe("thoughtList", () => {
+  describe("surfaceList", () => {
     it("formats entries into a readable list", async () => {
       queryIndex.mockResolvedValue([
         {
-          path: "_thoughts/test-project/note1.md",
+          path: "_surfaces/test-project/note1.md",
           project: "test-project",
           created: "2025-01-01",
           type: "research",
@@ -125,28 +125,28 @@ describe("thought handlers", () => {
         },
       ]);
 
-      const { thoughtList } = await import("../../tools/thought.js");
-      const result = await thoughtList({});
+      const { surfaceList } = await import("../../tools/surface.js");
+      const result = await surfaceList({});
 
       expect(result.content[0].text).toContain(
-        "_thoughts/test-project/note1.md",
+        "_surfaces/test-project/note1.md",
       );
       expect(result.content[0].text).toContain("type: research");
       expect(result.content[0].text).toContain("tags: api");
       expect(result.content[0].text).toContain("summary: API research");
     });
 
-    it("returns 'No thoughts found' when empty", async () => {
+    it("returns 'No surfaces found' when empty", async () => {
       queryIndex.mockResolvedValue([]);
 
-      const { thoughtList } = await import("../../tools/thought.js");
-      const result = await thoughtList({});
+      const { surfaceList } = await import("../../tools/surface.js");
+      const result = await surfaceList({});
 
-      expect(result.content[0].text).toBe("No thoughts found.");
+      expect(result.content[0].text).toBe("No surfaces found.");
     });
   });
 
-  describe("thoughtEnrich", () => {
+  describe("surfaceEnrich", () => {
     it("reads content, updates frontmatter, and writes back", async () => {
       execObsidian
         .mockResolvedValueOnce(
@@ -155,31 +155,29 @@ describe("thought handlers", () => {
         .mockResolvedValueOnce("Written");
       appendEntry.mockResolvedValue(undefined);
 
-      const { thoughtEnrich } = await import("../../tools/thought.js");
-      const result = await thoughtEnrich({
-        path: "_thoughts/test-project/note.md",
+      const { surfaceEnrich } = await import("../../tools/surface.js");
+      const result = await surfaceEnrich({
+        path: "_surfaces/test-project/note.md",
         summary: "New summary",
         type: "decision",
         tags: ["updated"],
       });
 
       expect(result.content[0].text).toBe(
-        "Enriched thought: _thoughts/test-project/note.md",
+        "Enriched surface: _surfaces/test-project/note.md",
       );
 
-      // Verify the write call
       expect(execObsidian).toHaveBeenCalledTimes(2);
       const writeArgs = execObsidian.mock.calls[1][0];
       expect(writeArgs[0]).toBe("create");
-      expect(writeArgs[1]).toContain("path=_thoughts/test-project/note.md");
+      expect(writeArgs[1]).toContain("path=_surfaces/test-project/note.md");
       const writtenContent = writeArgs[2] as string;
       expect(writtenContent).toContain("summary: New summary");
       expect(writtenContent).toContain("type: decision");
 
-      // Verify appendEntry called
       expect(appendEntry).toHaveBeenCalledWith(
         expect.objectContaining({
-          path: "_thoughts/test-project/note.md",
+          path: "_surfaces/test-project/note.md",
           summary: "New summary",
           type: "decision",
           tags: ["updated"],
@@ -190,21 +188,21 @@ describe("thought handlers", () => {
     it("returns error when content cannot be read", async () => {
       execObsidian.mockResolvedValueOnce("");
 
-      const { thoughtEnrich } = await import("../../tools/thought.js");
-      const result = await thoughtEnrich({
-        path: "_thoughts/test-project/missing.md",
+      const { surfaceEnrich } = await import("../../tools/surface.js");
+      const result = await surfaceEnrich({
+        path: "_surfaces/test-project/missing.md",
       });
 
       expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("Could not read thought");
+      expect(result.content[0].text).toContain("Could not read surface");
     });
 
     it("returns error when no frontmatter found", async () => {
       execObsidian.mockResolvedValueOnce("Content without frontmatter");
 
-      const { thoughtEnrich } = await import("../../tools/thought.js");
-      const result = await thoughtEnrich({
-        path: "_thoughts/test-project/no-fm.md",
+      const { surfaceEnrich } = await import("../../tools/surface.js");
+      const result = await surfaceEnrich({
+        path: "_surfaces/test-project/no-fm.md",
       });
 
       expect(result.isError).toBe(true);

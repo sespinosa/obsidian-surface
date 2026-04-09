@@ -10,14 +10,14 @@ import { handlers as searchHandlers } from "./search.js";
 import { handlers as tagHandlers } from "./tag.js";
 import { handlers as taskHandlers } from "./task.js";
 import { handlers as templateHandlers } from "./template.js";
-import { handlers as thoughtHandlers } from "./thought.js";
+import { handlers as surfaceHandlers } from "./surface.js";
 import { handlers as vaultHandlers } from "./vault.js";
 
 const toolMap: Record<
   string,
   Record<string, (p: any) => Promise<ToolResult>>
 > = {
-  thought: thoughtHandlers,
+  surface: surfaceHandlers,
   note: noteHandlers,
   layout: layoutHandlers,
   vault: vaultHandlers,
@@ -41,7 +41,7 @@ Execution stops on first error. Returns results for all executed steps.
 
 Example:
   steps: [
-    { tool: "note", action: "create", params: { path: "my/note.md", content: "Hello" } },
+    { tool: "surface", action: "create", params: { name: "demo", content: "Hello", summary: "Demo" } },
     { tool: "layout", action: "open", params: { path: "my/note.md" } },
     { tool: "layout", action: "split", params: { direction: "vertical" } }
   ]`,
@@ -51,7 +51,7 @@ Example:
           z.object({
             tool: z
               .enum([
-                "thought",
+                "surface",
                 "note",
                 "layout",
                 "vault",

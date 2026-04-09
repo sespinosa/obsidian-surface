@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-export const THOUGHTS_DIR = "_thoughts";
+export const SURFACES_DIR = "_surfaces";
 
 export type RegisterFn = (server: McpServer) => void;
 

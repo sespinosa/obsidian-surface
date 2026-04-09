@@ -6,9 +6,6 @@ import { error, success, type ToolResult } from "../types.js";
 // --- Handler functions ---
 
 export async function devEval(p: { code: string }): Promise<ToolResult> {
-  if (process.env.OBSIDIAN_ENABLE_EVAL !== "true") {
-    return error("eval is disabled. Set OBSIDIAN_ENABLE_EVAL=true to enable.");
-  }
   const result = await execObsidian(["eval", `code=${p.code}`]);
   return success(result || "(no output)");
 }
@@ -35,7 +32,7 @@ export function register(server: McpServer): void {
     `Developer tools for Obsidian.
 
 Actions:
-- eval: Execute JavaScript in the Obsidian app context (code required). WARNING: runs arbitrary code inside Obsidian. Requires OBSIDIAN_ENABLE_EVAL=true env var
+- eval: Execute JavaScript in the Obsidian app context (code required)
 - screenshot: Take a screenshot of the Obsidian window (path optional)`,
     {
       action: z.enum(["eval", "screenshot"]).describe("Action to perform"),

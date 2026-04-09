@@ -57,14 +57,14 @@ describe("index-manager", () => {
       const { appendEntry } = await import("../index-manager.js");
 
       await appendEntry({
-        path: "_thoughts/proj/note.md",
+        path: "_surfaces/proj/note.md",
         project: "proj",
         created: "2025-01-01",
       });
 
       expect(writeFile).toHaveBeenCalledWith(
         expect.stringContaining("_index.json"),
-        expect.stringContaining("_thoughts/proj/note.md"),
+        expect.stringContaining("_surfaces/proj/note.md"),
         "utf-8",
       );
     });
@@ -72,7 +72,7 @@ describe("index-manager", () => {
     it("deduplicates by path (replaces existing)", async () => {
       seedIndex([
         {
-          path: "_thoughts/proj/note.md",
+          path: "_surfaces/proj/note.md",
           project: "proj",
           created: "2025-01-01",
           summary: "old",
@@ -81,7 +81,7 @@ describe("index-manager", () => {
       const { appendEntry } = await import("../index-manager.js");
 
       await appendEntry({
-        path: "_thoughts/proj/note.md",
+        path: "_surfaces/proj/note.md",
         project: "proj",
         created: "2025-01-02",
         summary: "new",
@@ -129,7 +129,7 @@ describe("index-manager", () => {
   describe("queryIndex", () => {
     const entries = [
       {
-        path: "_thoughts/proj-a/note1.md",
+        path: "_surfaces/proj-a/note1.md",
         project: "proj-a",
         created: "2025-01-01",
         type: "research",
@@ -137,7 +137,7 @@ describe("index-manager", () => {
         summary: "API design notes",
       },
       {
-        path: "_thoughts/proj-b/note2.md",
+        path: "_surfaces/proj-b/note2.md",
         project: "proj-b",
         created: "2025-06-15",
         type: "decision",
@@ -145,7 +145,7 @@ describe("index-manager", () => {
         summary: "Architecture decision",
       },
       {
-        path: "_thoughts/proj-a/note3.md",
+        path: "_surfaces/proj-a/note3.md",
         project: "proj-a",
         created: "2025-03-01",
         type: "research",
@@ -242,7 +242,7 @@ describe("index-manager", () => {
       // readdir for thoughtsRoot returns project dirs
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["project-a"] as any;
+        if (p.endsWith("_surfaces")) return ["project-a"] as any;
         if (p.endsWith("project-a")) return ["note1.md"] as any;
         return [] as any;
       });
@@ -270,7 +270,7 @@ describe("index-manager", () => {
     it("skips underscore-prefixed directories", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts"))
+        if (p.endsWith("_surfaces"))
           return ["_internal", "valid-project"] as any;
         if (p.endsWith("valid-project")) return ["note.md"] as any;
         return [] as any;
@@ -292,7 +292,7 @@ describe("index-manager", () => {
     it("skips underscore-prefixed files", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["project"] as any;
+        if (p.endsWith("_surfaces")) return ["project"] as any;
         if (p.endsWith("project")) return ["_hidden.md", "visible.md"] as any;
         return [] as any;
       });
@@ -327,7 +327,7 @@ describe("index-manager", () => {
     it("parses standard YAML frontmatter", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["proj"] as any;
+        if (p.endsWith("_surfaces")) return ["proj"] as any;
         if (p.endsWith("proj")) return ["note.md"] as any;
         return [] as any;
       });
@@ -354,7 +354,7 @@ describe("index-manager", () => {
     it("parses array values in frontmatter", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["proj"] as any;
+        if (p.endsWith("_surfaces")) return ["proj"] as any;
         if (p.endsWith("proj")) return ["note.md"] as any;
         return [] as any;
       });
@@ -378,7 +378,7 @@ describe("index-manager", () => {
     it("handles empty frontmatter", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["proj"] as any;
+        if (p.endsWith("_surfaces")) return ["proj"] as any;
         if (p.endsWith("proj")) return ["note.md"] as any;
         return [] as any;
       });
@@ -404,7 +404,7 @@ describe("index-manager", () => {
     it("handles content with no frontmatter", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["proj"] as any;
+        if (p.endsWith("_surfaces")) return ["proj"] as any;
         if (p.endsWith("proj")) return ["note.md"] as any;
         return [] as any;
       });
@@ -432,7 +432,7 @@ describe("index-manager", () => {
     it("handles quoted values in frontmatter", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["proj"] as any;
+        if (p.endsWith("_surfaces")) return ["proj"] as any;
         if (p.endsWith("proj")) return ["note.md"] as any;
         return [] as any;
       });
@@ -456,7 +456,7 @@ describe("index-manager", () => {
     it("handles malformed frontmatter (missing closing ---)", async () => {
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
-        if (p.endsWith("_thoughts")) return ["proj"] as any;
+        if (p.endsWith("_surfaces")) return ["proj"] as any;
         if (p.endsWith("proj")) return ["note.md"] as any;
         return [] as any;
       });

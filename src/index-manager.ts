@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { execObsidian } from "./cli.js";
-import { THOUGHTS_DIR } from "./types.js";
+import { SURFACES_DIR } from "./types.js";
 
 export interface IndexEntry {
   path: string;
@@ -40,7 +40,7 @@ async function resolveVaultPath(): Promise<string> {
 /** Get the absolute filesystem path to the index file */
 async function indexFilePath(): Promise<string> {
   const vaultPath = await resolveVaultPath();
-  return join(vaultPath, THOUGHTS_DIR, "_index.json");
+  return join(vaultPath, SURFACES_DIR, "_index.json");
 }
 
 /** Read the index from disk, returning an empty index if it doesn't exist */
@@ -165,7 +165,7 @@ function parseFrontmatter(content: string): Record<string, string | string[]> {
 /** Rebuild the entire index by scanning all thought files */
 export async function reindex(): Promise<number> {
   const vaultPath = await resolveVaultPath();
-  const thoughtsRoot = join(vaultPath, THOUGHTS_DIR);
+  const thoughtsRoot = join(vaultPath, SURFACES_DIR);
   const entries: IndexEntry[] = [];
 
   let projects: string[];
@@ -201,7 +201,7 @@ export async function reindex(): Promise<number> {
       const fm = parseFrontmatter(content);
 
       entries.push({
-        path: `${THOUGHTS_DIR}/${project}/${file}`,
+        path: `${SURFACES_DIR}/${project}/${file}`,
         project: (fm.project as string) || project,
         created: (fm.created as string) || new Date().toISOString(),
         type: fm.type as string | undefined,

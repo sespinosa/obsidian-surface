@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // We need to mock all the tool handler modules that compose.ts imports
-vi.mock("../../tools/thought.js", () => ({
+vi.mock("../../tools/surface.js", () => ({
   handlers: {
     create: vi.fn(),
   },
