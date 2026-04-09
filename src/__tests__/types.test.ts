@@ -65,8 +65,6 @@ describe("validatePath", () => {
   });
 
   it("rejects newlines", () => {
-    expect(() => validatePath("folder\nevil")).toThrow(
-      "newlines not allowed",
-    );
+    expect(() => validatePath("folder\nevil")).toThrow("newlines not allowed");
   });
 });

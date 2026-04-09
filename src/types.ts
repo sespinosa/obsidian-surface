@@ -35,10 +35,7 @@ export function validatePath(path: string): string {
   }
   // Normalize backslashes first, then check all absolute path forms
   const normalized = posix.normalize(path.replace(/\\/g, "/"));
-  if (
-    normalized.startsWith("/") ||
-    /^[A-Z]:/i.test(normalized)
-  ) {
+  if (normalized.startsWith("/") || /^[A-Z]:/i.test(normalized)) {
     throw new Error("Absolute paths not allowed — use vault-relative paths");
   }
   if (normalized.startsWith("..") || normalized.includes("/..")) {
