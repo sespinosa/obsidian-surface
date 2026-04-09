@@ -240,7 +240,7 @@ describe("index-manager", () => {
 
   describe("reindex", () => {
     it("scans files and builds index from frontmatter", async () => {
-      // readdir for thoughtsRoot returns project dirs
+      // readdir for surfacesRoot returns project dirs
       readdir.mockImplementation(async (path: any) => {
         const p = String(path);
         if (p.endsWith("_surfaces")) return ["project-a"] as any;
@@ -311,7 +311,7 @@ describe("index-manager", () => {
       expect(count).toBe(1);
     });
 
-    it("returns 0 when thoughts directory does not exist", async () => {
+    it("returns 0 when surfaces directory does not exist", async () => {
       readdir.mockRejectedValue(new Error("ENOENT"));
 
       const { reindex } = await import("../index-manager.js");
